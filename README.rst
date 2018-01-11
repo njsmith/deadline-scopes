@@ -29,7 +29,7 @@ layer anyway... hmm <https://github.com/njsmith/urllib3/issues/1>`__.
 Example
 =======
 
-.. code-block:: python3
+.. code-block:: python
 
    from deadline_scopes import deadline_socket, fail_after
 
