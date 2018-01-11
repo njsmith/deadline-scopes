@@ -17,7 +17,9 @@ _stack_holder = threading.local()
 
 
 def _scope_stack():
-    return getattr(_stack_holder, "value", [])
+    if not hasattr(_stack_holder, "value"):
+        _stack_holder.value = []
+    return _stack_holder.value
 
 
 def _now():
@@ -33,6 +35,10 @@ class DeadlineScope:
 @attr.s
 class Cancelled(BaseException):
     _scope = attr.ib()
+
+
+class TooSlowError(Exception):
+    pass
 
 
 def check_timeout(default=float("inf")):
@@ -70,7 +76,7 @@ def open_deadline_scope(when):
 
 @contextmanager
 def move_on_after(seconds):
-    with open_deadline_scope(now() + seconds) as ds:
+    with open_deadline_scope(_now() + seconds) as ds:
         yield ds
 
 
@@ -103,6 +109,7 @@ class DeadlineSocket:
             except socket.timeout:
                 check_timeout()  # should raise
                 assert False
+        return wrapped_method
 
     def __getattr__(self, name):
         if name in _BLOCKING_SOCKET_METHODS:
